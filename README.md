@@ -16,6 +16,27 @@ Native macOS status item. Shared core. Modular bundles. Quiet adaptive refresh.
 
 </div>
 
+## Quick install on Mac
+
+The easiest install path is:
+
+1. Download this repo as a ZIP and open it.
+2. Double-click [install.command](install.command).
+3. Press `Return` to install `WindowWatch` by default, or choose:
+   - `WindowWatch` (default, Claude + Codex)
+   - `ClaudeWindowWatch`
+   - `CodexWindowWatch`
+   - or all three
+
+The installer will:
+
+- build the apps
+- copy the selected bundle into `/Applications`
+- replace any existing copy
+- launch the installed app
+
+If macOS warns that the app is unsigned, right-click it once in `/Applications` and choose `Open`.
+
 ## What it is
 
 WindowWatch puts the only numbers people actually care about in the macOS menu bar:
@@ -120,6 +141,18 @@ Build output:
 ./run.sh
 ./run-claude.sh
 ./run-codex.sh
+```
+
+## Installer scripts
+
+For terminal-based installs:
+
+```bash
+./install.sh
+./install.sh combined
+./install.sh claude
+./install.sh codex
+./install.sh all
 ```
 
 ## Demo
