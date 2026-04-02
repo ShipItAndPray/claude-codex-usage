@@ -236,14 +236,23 @@ final class UsageFetcher {
     }
 
     func readCachedSnapshot() -> DashboardSnapshot? {
-        for directory in cacheDirectoryCandidates() {
+        let snapshots = cacheDirectoryCandidates().compactMap { directory -> DashboardSnapshot? in
             let cacheURL = snapshotCacheURL(in: directory)
-            guard let data = try? Data(contentsOf: cacheURL) else { continue }
-            if let snapshot = try? decoder.decode(DashboardSnapshot.self, from: data) {
-                return snapshot
-            }
+            guard let data = try? Data(contentsOf: cacheURL) else { return nil }
+            return try? decoder.decode(DashboardSnapshot.self, from: data)
         }
-        return nil
+
+        guard !snapshots.isEmpty else { return nil }
+
+        var best = snapshots[0]
+        for candidate in snapshots.dropFirst() {
+            best = DashboardSnapshot(
+                generatedAt: max(best.generatedAt, candidate.generatedAt),
+                claude: preferredSnapshot(best.claude, best.generatedAt, candidate.claude, candidate.generatedAt),
+                codex: preferredSnapshot(best.codex, best.generatedAt, candidate.codex, candidate.generatedAt)
+            )
+        }
+        return best
     }
 
     func writeCachedSnapshot(_ snapshot: DashboardSnapshot) throws {
@@ -454,10 +463,40 @@ final class UsageFetcher {
             let cacheURL = cacheFileURL(in: directory)
             guard let data = try? Data(contentsOf: cacheURL) else { continue }
             if let oauth = try? decoder.decode(ClaudeOAuth.self, from: data) {
+                if directory != preferredCacheDirectoryURL() {
+                    try? writeCachedClaudeOAuth(oauth)
+                }
                 return oauth
             }
         }
         return nil
+    }
+
+    private func preferredSnapshot(
+        _ current: ServiceSnapshot,
+        _ currentGeneratedAt: Date,
+        _ candidate: ServiceSnapshot,
+        _ candidateGeneratedAt: Date
+    ) -> ServiceSnapshot {
+        if current.hasVisibleValues != candidate.hasVisibleValues {
+            return candidate.hasVisibleValues ? candidate : current
+        }
+
+        if current.isAvailable != candidate.isAvailable {
+            return candidate.isAvailable ? candidate : current
+        }
+
+        let currentObservedAt = current.observedAt ?? currentGeneratedAt
+        let candidateObservedAt = candidate.observedAt ?? candidateGeneratedAt
+        if currentObservedAt != candidateObservedAt {
+            return candidateObservedAt > currentObservedAt ? candidate : current
+        }
+
+        if let currentError = current.error, candidate.error == nil, !currentError.isEmpty {
+            return candidate
+        }
+
+        return current
     }
 
     private func writeCachedClaudeOAuth(_ oauth: ClaudeOAuth) throws {
@@ -478,7 +517,7 @@ final class UsageFetcher {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("ClaudeCodexUsage/1.3", forHTTPHeaderField: "User-Agent")
+        request.setValue("ClaudeCodexUsage/1.4", forHTTPHeaderField: "User-Agent")
 
         let semaphore = DispatchSemaphore(value: 0)
         var responseData: Data?
@@ -938,32 +977,61 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if highestUtilization >= 60 {
                 return 420
             }
-            return 600
+            return 300
         }
 
         let failureCount = (failureCounts[.claude] ?? 0) + 1
         failureCounts[.claude] = failureCount
 
         if let retryAfter = incoming.retryAfterSeconds {
-            return max(900, retryAfter)
+            if previous?.hasVisibleValues == true {
+                return max(300, retryAfter)
+            }
+            return max(60, retryAfter)
         }
 
         if isClaudeRateLimited(incoming) {
+            if previous?.hasVisibleValues == true {
+                switch failureCount {
+                case 1:
+                    return 300
+                case 2:
+                    return 600
+                case 3:
+                    return 900
+                default:
+                    return 1800
+                }
+            }
+
             switch failureCount {
             case 1:
-                return 900
+                return 60
             case 2:
-                return 1800
+                return 120
+            case 3:
+                return 300
+            case 4:
+                return 900
             default:
-                return 3600
+                return 1800
             }
         }
 
         if previous?.hasVisibleValues == true {
-            return min(3600, Double(600 * max(1, failureCount)))
+            return min(1800, Double(180 * max(1, failureCount)))
         }
 
-        return min(1800, Double(300 * (1 << min(failureCount - 1, 3))))
+        switch failureCount {
+        case 1:
+            return 60
+        case 2:
+            return 120
+        case 3:
+            return 300
+        default:
+            return min(1800, Double(300 * (1 << min(failureCount - 3, 2))))
+        }
     }
 
     private func nextCodexRefreshDelay(incoming: ServiceSnapshot, merged: ServiceSnapshot) -> TimeInterval {
