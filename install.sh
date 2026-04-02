@@ -29,16 +29,16 @@ install_selection() {
 
   case "$selection" in
     combined)
-      install_bundle "$ROOT/build/WindowWatch.app" "$APPLICATIONS_DIR/WindowWatch.app" "WindowWatch"
-      printf 'Installed %s\n' "$APPLICATIONS_DIR/WindowWatch.app"
+      install_bundle "$ROOT/build/Claude Codex Usage.app" "$APPLICATIONS_DIR/Claude Codex Usage.app" "ClaudeCodexUsage"
+      printf 'Installed %s\n' "$APPLICATIONS_DIR/Claude Codex Usage.app"
       ;;
     claude)
-      install_bundle "$ROOT/build/ClaudeWindowWatch.app" "$APPLICATIONS_DIR/ClaudeWindowWatch.app" "ClaudeWindowWatch"
-      printf 'Installed %s\n' "$APPLICATIONS_DIR/ClaudeWindowWatch.app"
+      install_bundle "$ROOT/build/Claude Usage.app" "$APPLICATIONS_DIR/Claude Usage.app" "ClaudeUsage"
+      printf 'Installed %s\n' "$APPLICATIONS_DIR/Claude Usage.app"
       ;;
     codex)
-      install_bundle "$ROOT/build/CodexWindowWatch.app" "$APPLICATIONS_DIR/CodexWindowWatch.app" "CodexWindowWatch"
-      printf 'Installed %s\n' "$APPLICATIONS_DIR/CodexWindowWatch.app"
+      install_bundle "$ROOT/build/Codex Usage.app" "$APPLICATIONS_DIR/Codex Usage.app" "CodexUsage"
+      printf 'Installed %s\n' "$APPLICATIONS_DIR/Codex Usage.app"
       ;;
     all)
       install_selection combined
@@ -53,10 +53,10 @@ install_selection() {
 }
 
 prompt_for_selection() {
-  printf '\nWindowWatch installer\n\n'
-  printf '1. Install WindowWatch (Claude + Codex) [default]\n'
-  printf '2. Install ClaudeWindowWatch\n'
-  printf '3. Install CodexWindowWatch\n'
+  printf '\nClaude Codex Usage installer\n\n'
+  printf '1. Install Claude Codex Usage (Claude + Codex) [default]\n'
+  printf '2. Install Claude Usage\n'
+  printf '3. Install Codex Usage\n'
   printf '4. Install all three\n'
   printf '\nChoose an option [1-4, default 1]: '
 

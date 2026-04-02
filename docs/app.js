@@ -1,7 +1,7 @@
 const scenes = {
   combined: {
     title: "Updated 12:34 PM",
-    appName: "WindowWatch",
+    appName: "Claude Codex Usage",
     items: [
       { kind: "claude", text: "26% 83%", detail: "Claude: 5h session 26%, 7d overall 83%" },
       { kind: "codex", text: "5% 2%", detail: "Codex: 5h session 5%, 7d overall 2%" },
@@ -9,7 +9,7 @@ const scenes = {
   },
   backoff: {
     title: "Updated 12:34 PM",
-    appName: "WindowWatch",
+    appName: "Claude Codex Usage",
     items: [
       { kind: "claude", text: "26% 83%", detail: "Claude: 5h session 26%, 7d overall 83%" },
       { kind: "codex", text: "5% 2%", detail: "Codex: 5h session 5%, 7d overall 2%" },
@@ -17,12 +17,12 @@ const scenes = {
   },
   claude: {
     title: "Updated 12:34 PM",
-    appName: "ClaudeWindowWatch",
+    appName: "Claude Usage",
     items: [{ kind: "claude", text: "26% 83%", detail: "Claude: 5h session 26%, 7d overall 83%" }],
   },
   codex: {
     title: "Updated 12:34 PM",
-    appName: "CodexWindowWatch",
+    appName: "Codex Usage",
     items: [{ kind: "codex", text: "5% 2%", detail: "Codex: 5h session 5%, 7d overall 2%" }],
   },
 };

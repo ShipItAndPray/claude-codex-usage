@@ -86,10 +86,10 @@ struct AppConfiguration {
     let enabledServices: Set<ServiceKind>
 
     static func load(from bundle: Bundle = .main) -> AppConfiguration {
-        let rawServices = bundle.object(forInfoDictionaryKey: "UsageWatchServices") as? [String] ?? []
+        let rawServices = bundle.object(forInfoDictionaryKey: "ClaudeCodexUsageServices") as? [String] ?? []
         let parsedServices = Set(rawServices.compactMap { ServiceKind(rawValue: $0.lowercased()) })
         let enabledServices = parsedServices.isEmpty ? Set(ServiceKind.allCases) : parsedServices
-        let displayName = (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String) ?? "WindowWatch"
+        let displayName = (bundle.object(forInfoDictionaryKey: "CFBundleName") as? String) ?? "Claude Codex Usage"
         return AppConfiguration(displayName: displayName, enabledServices: enabledServices)
     }
 
@@ -144,7 +144,7 @@ struct ClaudeUsageResponse: Decodable {
     let seven_day: ClaudeRateLimit?
 }
 
-enum UsageWatchError: LocalizedError {
+enum ClaudeCodexUsageError: LocalizedError {
     case missingClaudeCredentials
     case claudeRateLimited(retryAfter: TimeInterval?)
     case claudeRequestFailed(statusCode: Int, body: String)
@@ -199,12 +199,12 @@ final class UsageFetcher {
                 observedAt: Date(),
                 retryAfterSeconds: nil
             )
-        } catch UsageWatchError.missingClaudeCredentials {
-            return .unavailable(name: "Claude", message: UsageWatchError.missingClaudeCredentials.localizedDescription)
-        } catch UsageWatchError.claudeRateLimited(let retryAfter) {
+        } catch ClaudeCodexUsageError.missingClaudeCredentials {
+            return .unavailable(name: "Claude", message: ClaudeCodexUsageError.missingClaudeCredentials.localizedDescription)
+        } catch ClaudeCodexUsageError.claudeRateLimited(let retryAfter) {
             return .failure(
                 name: "Claude",
-                message: UsageWatchError.claudeRateLimited(retryAfter: retryAfter).localizedDescription,
+                message: ClaudeCodexUsageError.claudeRateLimited(retryAfter: retryAfter).localizedDescription,
                 retryAfterSeconds: retryAfter
             )
         } catch {
@@ -236,16 +236,21 @@ final class UsageFetcher {
     }
 
     func readCachedSnapshot() -> DashboardSnapshot? {
-        let cacheURL = snapshotCacheURL()
-        guard let data = try? Data(contentsOf: cacheURL) else { return nil }
-        return try? decoder.decode(DashboardSnapshot.self, from: data)
+        for directory in cacheDirectoryCandidates() {
+            let cacheURL = snapshotCacheURL(in: directory)
+            guard let data = try? Data(contentsOf: cacheURL) else { continue }
+            if let snapshot = try? decoder.decode(DashboardSnapshot.self, from: data) {
+                return snapshot
+            }
+        }
+        return nil
     }
 
     func writeCachedSnapshot(_ snapshot: DashboardSnapshot) throws {
-        let cacheDir = cacheDirectoryURL()
+        let cacheDir = preferredCacheDirectoryURL()
         try fileManager.createDirectory(at: cacheDir, withIntermediateDirectories: true)
         let data = try encoder.encode(snapshot)
-        try data.write(to: snapshotCacheURL(), options: .atomic)
+        try data.write(to: snapshotCacheURL(in: cacheDir), options: .atomic)
     }
 
     private func codexSessionFiles(root: URL) -> [URL] {
@@ -399,7 +404,7 @@ final class UsageFetcher {
             }
         }
 
-        throw UsageWatchError.missingClaudeCredentials
+        throw ClaudeCodexUsageError.missingClaudeCredentials
     }
 
     private func readGenericPassword(service: String, account: String) -> Data? {
@@ -417,36 +422,53 @@ final class UsageFetcher {
         return item as? Data
     }
 
-    private func cacheDirectoryURL() -> URL {
+    private func applicationSupportBaseURL() -> URL {
         let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support")
-        return base.appendingPathComponent("UsageWatch", isDirectory: true)
+        return base
     }
 
-    private func cacheFileURL() -> URL {
-        cacheDirectoryURL().appendingPathComponent("claude-oauth.json")
+    private func preferredCacheDirectoryURL() -> URL {
+        applicationSupportBaseURL().appendingPathComponent("ClaudeCodexUsage", isDirectory: true)
     }
 
-    private func snapshotCacheURL() -> URL {
-        cacheDirectoryURL().appendingPathComponent("snapshot.json")
+    private func legacyCacheDirectoryURL() -> URL {
+        applicationSupportBaseURL().appendingPathComponent("UsageWatch", isDirectory: true)
+    }
+
+    private func cacheDirectoryCandidates() -> [URL] {
+        [preferredCacheDirectoryURL(), legacyCacheDirectoryURL()]
+    }
+
+    private func cacheFileURL(in directory: URL) -> URL {
+        directory.appendingPathComponent("claude-oauth.json")
+    }
+
+    private func snapshotCacheURL(in directory: URL) -> URL {
+        directory.appendingPathComponent("snapshot.json")
     }
 
     private func readCachedClaudeOAuth() -> ClaudeOAuth? {
-        let cacheURL = cacheFileURL()
-        guard let data = try? Data(contentsOf: cacheURL) else { return nil }
-        return try? decoder.decode(ClaudeOAuth.self, from: data)
+        for directory in cacheDirectoryCandidates() {
+            let cacheURL = cacheFileURL(in: directory)
+            guard let data = try? Data(contentsOf: cacheURL) else { continue }
+            if let oauth = try? decoder.decode(ClaudeOAuth.self, from: data) {
+                return oauth
+            }
+        }
+        return nil
     }
 
     private func writeCachedClaudeOAuth(_ oauth: ClaudeOAuth) throws {
-        let cacheDir = cacheDirectoryURL()
+        let cacheDir = preferredCacheDirectoryURL()
         try fileManager.createDirectory(at: cacheDir, withIntermediateDirectories: true)
         let data = try encoder.encode(oauth)
-        try data.write(to: cacheFileURL(), options: .atomic)
+        try data.write(to: cacheFileURL(in: cacheDir), options: .atomic)
     }
 
     private func requestClaudeUsage(accessToken: String) throws -> ClaudeUsageResponse {
         guard let url = URL(string: "https://api.anthropic.com/api/oauth/usage") else {
-            throw UsageWatchError.claudeUsageURLInvalid
+            throw ClaudeCodexUsageError.claudeUsageURLInvalid
         }
 
         var request = URLRequest(url: url)
@@ -455,7 +477,7 @@ final class UsageFetcher {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("UsageWatch/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("ClaudeCodexUsage/1.1", forHTTPHeaderField: "User-Agent")
 
         let semaphore = DispatchSemaphore(value: 0)
         var responseData: Data?
@@ -472,10 +494,10 @@ final class UsageFetcher {
                 let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
                 if httpResponse.statusCode == 429 {
                     let retryAfter = httpResponse.value(forHTTPHeaderField: "retry-after").flatMap(TimeInterval.init)
-                    responseError = UsageWatchError.claudeRateLimited(retryAfter: retryAfter)
+                    responseError = ClaudeCodexUsageError.claudeRateLimited(retryAfter: retryAfter)
                     return
                 }
-                responseError = UsageWatchError.claudeRequestFailed(statusCode: httpResponse.statusCode, body: body)
+                responseError = ClaudeCodexUsageError.claudeRequestFailed(statusCode: httpResponse.statusCode, body: body)
                 return
             }
 
@@ -489,7 +511,7 @@ final class UsageFetcher {
         }
 
         guard let responseData else {
-            throw UsageWatchError.claudeUsageNoData
+            throw ClaudeCodexUsageError.claudeUsageNoData
         }
 
         return try decoder.decode(ClaudeUsageResponse.self, from: responseData)
@@ -1017,7 +1039,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func makeStatusImage() -> NSImage? {
-        if let image = NSImage(systemSymbolName: "chart.bar.xaxis", accessibilityDescription: "WindowWatch") {
+        if let image = NSImage(systemSymbolName: "chart.bar.xaxis", accessibilityDescription: "Claude Codex Usage") {
             image.isTemplate = true
             return image
         }

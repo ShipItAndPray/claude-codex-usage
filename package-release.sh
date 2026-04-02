@@ -13,16 +13,17 @@ rm -rf "$RELEASE_DIR"
 mkdir -p "$RELEASE_DIR"
 
 package_app() {
-  local app_name="$1"
-  local archive_path="$RELEASE_DIR/$app_name-$VERSION.zip"
-  ditto -c -k --sequesterRsrc --keepParent "$BUILD_DIR/$app_name.app" "$archive_path"
+  local app_dir_name="$1"
+  local archive_name="$2"
+  local archive_path="$RELEASE_DIR/$archive_name-$VERSION.zip"
+  ditto -c -k --sequesterRsrc --keepParent "$BUILD_DIR/$app_dir_name.app" "$archive_path"
   shasum -a 256 "$archive_path"
 }
 
 {
-  package_app "WindowWatch"
-  package_app "ClaudeWindowWatch"
-  package_app "CodexWindowWatch"
+  package_app "Claude Codex Usage" "ClaudeCodexUsage"
+  package_app "Claude Usage" "ClaudeUsage"
+  package_app "Codex Usage" "CodexUsage"
 } | tee "$RELEASE_DIR/checksums.txt"
 
 printf '\nRelease assets:\n'

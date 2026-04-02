@@ -1,6 +1,6 @@
-# UsageWatch Refresh Policy Baseline
+# Claude Codex Usage Refresh Policy Baseline
 
-Target file: `/Users/somepalli/codex/usage-menu-bar-app/Sources/UsageWatch/main.swift`
+Target file: `Sources/ClaudeCodexUsage/main.swift`
 
 Baseline behavior before refinement:
 

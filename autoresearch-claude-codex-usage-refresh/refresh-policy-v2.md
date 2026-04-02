@@ -1,4 +1,4 @@
-# UsageWatch Refresh Policy v2
+# Claude Codex Usage Refresh Policy v2
 
 ## Goal
 

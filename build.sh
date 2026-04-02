@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$ROOT/build"
-COMMON_BINARY="$BUILD_DIR/UsageWatchBinary"
+COMMON_BINARY="$BUILD_DIR/ClaudeCodexUsageBinary"
 ASSETS_DIR="$ROOT/Assets"
 
 mkdir -p "$BUILD_DIR"
@@ -14,16 +14,17 @@ qlmanage -t -s 64 -o "$ASSETS_DIR" "$ASSETS_DIR/anthropic-favicon.ico" >/dev/nul
 swiftc \
   -framework AppKit \
   -framework Security \
-  "$ROOT/Sources/UsageWatch/main.swift" \
+  "$ROOT/Sources/ClaudeCodexUsage/main.swift" \
   -o "$COMMON_BINARY"
 
 create_app() {
   local executable_name="$1"
-  local bundle_name="$2"
-  local bundle_id="$3"
-  shift 3
+  local app_name="$2"
+  local bundle_name="$3"
+  local bundle_id="$4"
+  shift 4
   local services=("$@")
-  local app_dir="$BUILD_DIR/$executable_name.app"
+  local app_dir="$BUILD_DIR/$app_name.app"
   local macos_dir="$app_dir/Contents/MacOS"
   local resources_dir="$app_dir/Contents/Resources"
   local plist="$app_dir/Contents/Info.plist"
@@ -35,12 +36,12 @@ create_app() {
   /usr/libexec/PlistBuddy -c "Set :CFBundleExecutable $executable_name" "$plist"
   /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $bundle_id" "$plist"
   /usr/libexec/PlistBuddy -c "Set :CFBundleName $bundle_name" "$plist"
-  /usr/libexec/PlistBuddy -c "Delete :UsageWatchServices" "$plist" >/dev/null 2>&1 || true
-  /usr/libexec/PlistBuddy -c "Add :UsageWatchServices array" "$plist"
+  /usr/libexec/PlistBuddy -c "Delete :ClaudeCodexUsageServices" "$plist" >/dev/null 2>&1 || true
+  /usr/libexec/PlistBuddy -c "Add :ClaudeCodexUsageServices array" "$plist"
 
   local index=0
   for service in "${services[@]}"; do
-    /usr/libexec/PlistBuddy -c "Add :UsageWatchServices:$index string $service" "$plist"
+    /usr/libexec/PlistBuddy -c "Add :ClaudeCodexUsageServices:$index string $service" "$plist"
     index=$((index + 1))
   done
 
@@ -51,11 +52,11 @@ create_app() {
   codesign --force --deep --sign - --timestamp=none "$app_dir" >/dev/null 2>&1 || true
 }
 
-create_app "WindowWatch" "WindowWatch" "local.somepalli.windowwatch" "claude" "codex"
-create_app "ClaudeWindowWatch" "ClaudeWindowWatch" "local.somepalli.claudewindowwatch" "claude"
-create_app "CodexWindowWatch" "CodexWindowWatch" "local.somepalli.codexwindowwatch" "codex"
+create_app "ClaudeCodexUsage" "Claude Codex Usage" "Claude Codex Usage" "io.github.shipitandpray.claudecodexusage" "claude" "codex"
+create_app "ClaudeUsage" "Claude Usage" "Claude Usage" "io.github.shipitandpray.claudeusage" "claude"
+create_app "CodexUsage" "Codex Usage" "Codex Usage" "io.github.shipitandpray.codexusage" "codex"
 
 printf '%s\n' \
-  "$BUILD_DIR/WindowWatch.app" \
-  "$BUILD_DIR/ClaudeWindowWatch.app" \
-  "$BUILD_DIR/CodexWindowWatch.app"
+  "$BUILD_DIR/Claude Codex Usage.app" \
+  "$BUILD_DIR/Claude Usage.app" \
+  "$BUILD_DIR/Codex Usage.app"

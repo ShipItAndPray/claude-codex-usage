@@ -1,17 +1,17 @@
 <div align="center">
 
-# WindowWatch
+# Claude Codex Usage
 
 Menu bar telemetry for Claude and Codex.
 
 Native macOS status item. Shared core. Modular bundles. Quiet adaptive refresh.
 
 <p>
-  <img src="docs/images/menu-bar-preview.svg" alt="WindowWatch menu bar preview" width="860" />
+  <img src="docs/images/menu-bar-preview.svg" alt="Claude Codex Usage menu bar preview" width="860" />
 </p>
 
 <p>
-  <strong>One codebase</strong> for <code>WindowWatch.app</code>, <code>ClaudeWindowWatch.app</code>, and <code>CodexWindowWatch.app</code>.
+  <strong>One codebase</strong> for <code>Claude Codex Usage.app</code>, <code>Claude Usage.app</code>, and <code>Codex Usage.app</code>.
 </p>
 
 </div>
@@ -22,10 +22,10 @@ The easiest install path is:
 
 1. Download this repo as a ZIP and open it.
 2. Double-click [install.command](install.command).
-3. Press `Return` to install `WindowWatch` by default, or choose:
-   - `WindowWatch` (default, Claude + Codex)
-   - `ClaudeWindowWatch`
-   - `CodexWindowWatch`
+3. Press `Return` to install `Claude Codex Usage` by default, or choose:
+   - `Claude Codex Usage` (default, Claude + Codex)
+   - `Claude Usage`
+   - `Codex Usage`
    - or all three
 
 The installer will:
@@ -39,7 +39,7 @@ If macOS warns that the app is unsigned, right-click it once in `/Applications` 
 
 ## What it is
 
-WindowWatch puts the only numbers people actually care about in the macOS menu bar:
+Claude Codex Usage puts the only numbers people actually care about in the macOS menu bar:
 
 - Claude `5h` session usage
 - Claude `7d` overall usage
@@ -62,7 +62,7 @@ Most usage widgets are noisy in exactly the wrong places:
 - they wipe values when a provider has a temporary failure
 - they force one bundle shape on everyone
 
-WindowWatch takes the opposite approach:
+Claude Codex Usage takes the opposite approach:
 
 - the menu bar stays dense and glanceable
 - the dropdown is explicit and descriptive
@@ -73,9 +73,9 @@ WindowWatch takes the opposite approach:
 
 | Bundle | Purpose | Data sources |
 | --- | --- | --- |
-| `WindowWatch.app` | Combined install for people using both services | Claude usage endpoint + local Codex session logs |
-| `ClaudeWindowWatch.app` | Claude-only install | Claude usage endpoint |
-| `CodexWindowWatch.app` | Codex-only install | local Codex session logs |
+| `Claude Codex Usage.app` | Combined install for people using both services | Claude usage endpoint + local Codex session logs |
+| `Claude Usage.app` | Claude-only install | Claude usage endpoint |
+| `Codex Usage.app` | Codex-only install | local Codex session logs |
 
 ## Preview
 
@@ -131,9 +131,9 @@ cd usage-menu-bar-app
 
 Build output:
 
-- `build/WindowWatch.app`
-- `build/ClaudeWindowWatch.app`
-- `build/CodexWindowWatch.app`
+- `build/Claude Codex Usage.app`
+- `build/Claude Usage.app`
+- `build/Codex Usage.app`
 
 ## Run
 
@@ -168,11 +168,11 @@ The demo shows:
 
 ## Architecture
 
-- [Sources/UsageWatch/main.swift](Sources/UsageWatch/main.swift): native app and refresh logic
+- [Sources/ClaudeCodexUsage/main.swift](Sources/ClaudeCodexUsage/main.swift): native app and refresh logic
 - [build.sh](build.sh): produces all three app bundles from the same source tree
 - [docs/index.html](docs/index.html): repo demo page
-- [autoresearch-usagewatch-refresh/refresh-policy-v2.md](autoresearch-usagewatch-refresh/refresh-policy-v2.md): evaluated refresh policy that won the refinement loop
-- [autoresearch-usagewatch-refresh/results.tsv](autoresearch-usagewatch-refresh/results.tsv): baseline vs candidate scores
+- [autoresearch-claude-codex-usage-refresh/refresh-policy-v2.md](autoresearch-claude-codex-usage-refresh/refresh-policy-v2.md): evaluated refresh policy that won the refinement loop
+- [autoresearch-claude-codex-usage-refresh/results.tsv](autoresearch-claude-codex-usage-refresh/results.tsv): baseline vs candidate scores
 
 ## Refinement notes
 
@@ -188,9 +188,9 @@ Winning candidate:
 
 Artifacts:
 
-- [refresh-policy-v2.md](autoresearch-usagewatch-refresh/refresh-policy-v2.md)
-- [results.tsv](autoresearch-usagewatch-refresh/results.tsv)
-- [changelog.md](autoresearch-usagewatch-refresh/changelog.md)
+- [refresh-policy-v2.md](autoresearch-claude-codex-usage-refresh/refresh-policy-v2.md)
+- [results.tsv](autoresearch-claude-codex-usage-refresh/results.tsv)
+- [changelog.md](autoresearch-claude-codex-usage-refresh/changelog.md)
 
 ## Status
 
