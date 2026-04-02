@@ -236,7 +236,7 @@ final class UsageFetcher {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("ClaudeCodexUsage/1.1", forHTTPHeaderField: "User-Agent")
+        request.setValue("ClaudeCodexUsage/1.2", forHTTPHeaderField: "User-Agent")
 
         let semaphore = DispatchSemaphore(value: 0)
         var responseData: Data?
