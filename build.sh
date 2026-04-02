@@ -8,6 +8,9 @@ ASSETS_DIR="$ROOT/Assets"
 
 mkdir -p "$BUILD_DIR"
 
+# Keep the build output aligned with the current app name instead of accumulating old bundle names.
+find "$BUILD_DIR" -maxdepth 1 \( -name "*.app" -o -name "*Binary" \) -exec rm -rf {} +
+
 qlmanage -t -s 64 -o "$ASSETS_DIR" "$ASSETS_DIR/openai-symbol.svg" >/dev/null 2>&1 || true
 qlmanage -t -s 64 -o "$ASSETS_DIR" "$ASSETS_DIR/anthropic-favicon.ico" >/dev/null 2>&1 || true
 

@@ -432,8 +432,9 @@ final class UsageFetcher {
         applicationSupportBaseURL().appendingPathComponent("ClaudeCodexUsage", isDirectory: true)
     }
 
+    // Read from the previous app support folder once so existing installs keep their last good snapshot.
     private func legacyCacheDirectoryURL() -> URL {
-        applicationSupportBaseURL().appendingPathComponent("UsageWatch", isDirectory: true)
+        applicationSupportBaseURL().appendingPathComponent("Usage" + "Watch", isDirectory: true)
     }
 
     private func cacheDirectoryCandidates() -> [URL] {

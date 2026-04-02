@@ -204,7 +204,7 @@ final class UsageFetcher {
         }
 
         throw NSError(
-            domain: "UsageWatch",
+            domain: "ClaudeCodexUsage",
             code: 1,
             userInfo: [NSLocalizedDescriptionKey: "Claude Code OAuth credentials were not found in the local keychain."]
         )
@@ -227,7 +227,7 @@ final class UsageFetcher {
 
     private func requestClaudeUsage(accessToken: String) throws -> ClaudeUsageResponse {
         guard let url = URL(string: "https://api.anthropic.com/api/oauth/usage") else {
-            throw NSError(domain: "UsageWatch", code: 2, userInfo: [NSLocalizedDescriptionKey: "Claude usage URL is invalid."])
+            throw NSError(domain: "ClaudeCodexUsage", code: 2, userInfo: [NSLocalizedDescriptionKey: "Claude usage URL is invalid."])
         }
 
         var request = URLRequest(url: url)
@@ -236,7 +236,7 @@ final class UsageFetcher {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("UsageWatch/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("ClaudeCodexUsage/1.1", forHTTPHeaderField: "User-Agent")
 
         let semaphore = DispatchSemaphore(value: 0)
         var responseData: Data?
@@ -252,7 +252,7 @@ final class UsageFetcher {
             if let httpResponse = response as? HTTPURLResponse, !(200 ..< 300).contains(httpResponse.statusCode) {
                 let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
                 responseError = NSError(
-                    domain: "UsageWatch",
+                    domain: "ClaudeCodexUsage",
                     code: httpResponse.statusCode,
                     userInfo: [NSLocalizedDescriptionKey: "Claude usage request failed: HTTP \(httpResponse.statusCode) \(body)"]
                 )
@@ -270,7 +270,7 @@ final class UsageFetcher {
 
         guard let responseData else {
             throw NSError(
-                domain: "UsageWatch",
+                domain: "ClaudeCodexUsage",
                 code: 3,
                 userInfo: [NSLocalizedDescriptionKey: "Claude usage request returned no data."]
             )
@@ -368,7 +368,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateStatusButton()
         menu.removeAllItems()
 
-        addDisabledItem("Usage Watch")
+        addDisabledItem("Claude Codex Usage")
         if let snapshot {
             addDisabledItem("Updated \(shortTime(snapshot.generatedAt))")
         } else if isRefreshing {
@@ -390,7 +390,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refreshItem.isEnabled = !isRefreshing
         menu.addItem(refreshItem)
 
-        let quitItem = NSMenuItem(title: "Quit Usage Watch", action: #selector(quitApp), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit Claude Codex Usage", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
     }
@@ -476,17 +476,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         button.title = "Usage"
         button.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
         button.image = nil
-        button.toolTip = "Usage Watch"
+        button.toolTip = "Claude Codex Usage"
     }
 
     private func updateStatusButton() {
         guard let button = statusItem.button else { return }
         button.title = isRefreshing ? "Usage…" : "Usage"
-        button.toolTip = "Usage Watch"
+        button.toolTip = "Claude Codex Usage"
     }
 
     private func makeStatusImage() -> NSImage? {
-        if let image = NSImage(systemSymbolName: "chart.bar.xaxis", accessibilityDescription: "Usage Watch") {
+        if let image = NSImage(systemSymbolName: "chart.bar.xaxis", accessibilityDescription: "Claude Codex Usage") {
             image.isTemplate = true
             return image
         }
