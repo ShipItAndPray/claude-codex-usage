@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WindowWatch Demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">WindowWatch</p>
+        <h1>Menu bar usage for Claude and Codex</h1>
+        <p class="lede">
+          One shared app core. Install the combined bundle, Claude-only, or Codex-only. Claude stays quiet and backs off
+          adaptively when Anthropic throttles the usage endpoint.
+        </p>
+      </section>
+
+      <section class="controls">
+        <button data-scene="combined" class="active">Combined</button>
+        <button data-scene="backoff">Claude Backoff</button>
+        <button data-scene="claude">Claude Only</button>
+        <button data-scene="codex">Codex Only</button>
+      </section>
+
+      <section class="demo-shell">
+        <div class="menu-bar">
+          <div class="traffic-lights">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="status-cluster" id="status-cluster"></div>
+        </div>
+
+        <div class="dropdown" id="dropdown">
+          <div class="dropdown-row muted" id="updated-row">Updated 12:34 PM</div>
+          <div class="dropdown-row" id="row-a"></div>
+          <div class="dropdown-row" id="row-b"></div>
+          <div class="dropdown-actions">
+            <div class="action">Refresh Now</div>
+            <div class="action danger">Quit WindowWatch</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="notes">
+        <div class="note">
+          <h2>Adaptive Claude refresh</h2>
+          <p>`5-10 minute` healthy cadence. `15-60 minute` backoff after `429`.</p>
+        </div>
+        <div class="note">
+          <h2>Modular bundles</h2>
+          <p>`WindowWatch.app`, `ClaudeWindowWatch.app`, and `CodexWindowWatch.app` are built from the same source tree.</p>
+        </div>
+        <div class="note">
+          <h2>Local-first Codex</h2>
+          <p>Codex usage is read from local session logs, so it can refresh far more often without inference cost.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+  </html>

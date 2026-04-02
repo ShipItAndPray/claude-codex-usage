@@ -1,0 +1,26 @@
+# UsageWatch Refresh Policy Baseline
+
+Target file: `/Users/somepalli/codex/usage-menu-bar-app/Sources/UsageWatch/main.swift`
+
+Baseline behavior before refinement:
+
+- Keep last good Claude values after a transient fetch failure.
+- Show transient Claude status text such as `stale, retrying later` in the menu and tooltip.
+- Claude success cadence:
+  - `60s` when utilization is very high
+  - `120s` when utilization is moderately high
+  - `180s` otherwise
+- Claude `429` retry cadence:
+  - `120s` after first hit
+  - `300s` after second hit
+  - `600s` after subsequent hits
+- Codex active refresh cadence:
+  - `20s`
+
+Binary evals used:
+
+1. Keep last good Claude values after `429`
+2. Hide transient Claude status from the user when values are already present
+3. First Claude retry after `429` is at least `15 minutes`
+4. Claude success cadence never polls more often than `5 minutes`
+5. Codex active refresh remains `30 seconds` or faster
