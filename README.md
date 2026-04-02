@@ -37,6 +37,20 @@ The installer will:
 
 If macOS warns that the app is unsigned, right-click it once in `/Applications` and choose `Open`.
 
+Or install with Homebrew:
+
+```bash
+brew tap ShipItAndPray/claude-codex-usage
+brew install --cask claude-codex-usage
+```
+
+Optional variants:
+
+```bash
+brew install --cask claude-codex-usage-claude
+brew install --cask claude-codex-usage-codex
+```
+
 ## What it is
 
 Claude Codex Usage puts the only numbers people actually care about in the macOS menu bar:
