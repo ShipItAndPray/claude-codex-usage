@@ -478,7 +478,7 @@ final class UsageFetcher {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("ClaudeCodexUsage/1.2", forHTTPHeaderField: "User-Agent")
+        request.setValue("ClaudeCodexUsage/1.3", forHTTPHeaderField: "User-Agent")
 
         let semaphore = DispatchSemaphore(value: 0)
         var responseData: Data?
@@ -770,8 +770,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         var blocks: [(kind: ServiceKind, text: String)] = []
 
         for service in configuration.orderedServices {
-            guard let snapshot = currentSnapshot(for: service), snapshot.hasVisibleValues else { continue }
-            blocks.append((kind: service, text: pairText(for: snapshot)))
+            guard let snapshot = currentSnapshot(for: service) else { continue }
+            blocks.append((kind: service, text: statusBlockText(for: snapshot)))
         }
 
         return blocks
@@ -875,6 +875,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let session = usageValue(for: service, label: "5h session")
         let weekly = usageValue(for: service, label: "7d overall")
         return "\(session) \(weekly)"
+    }
+
+    private func statusBlockText(for service: ServiceSnapshot) -> String {
+        if service.hasVisibleValues {
+            return pairText(for: service)
+        }
+        return "-- --"
     }
 
     private func detailedText(for service: ServiceSnapshot) -> String {
@@ -1003,8 +1010,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return isRefreshing ? configuration.loadingText : "No \(configuration.namesText) usage data available"
         }
         return configuration.orderedServices.compactMap { service in
-            guard let snapshot = currentSnapshot(for: service), snapshot.hasVisibleValues else { return nil }
-            return "\(service.name): \(menuStatusText(for: snapshot))"
+            guard let snapshot = currentSnapshot(for: service) else { return nil }
+            if snapshot.hasVisibleValues {
+                return "\(service.name): \(menuStatusText(for: snapshot))"
+            }
+            if let status = compactStatusMessage(for: snapshot) {
+                return "\(service.name): \(status)"
+            }
+            if !snapshot.isAvailable {
+                return "\(service.name): not configured"
+            }
+            return "\(service.name): checking usage"
         }.joined(separator: "   ")
     }
 
@@ -1015,6 +1031,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func menuSummary(for service: ServiceSnapshot) -> String {
         if service.hasVisibleValues {
             return "\(service.name): \(menuStatusText(for: service))"
+        }
+        if let status = compactStatusMessage(for: service) {
+            return "\(service.name): \(status)"
         }
         if !service.isAvailable {
             return "\(service.name): not configured"
